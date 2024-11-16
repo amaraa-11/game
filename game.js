@@ -1,7 +1,7 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-// Тоглоомын дэлгэцийн хэмжээ
+// Тоглоомын хэмжээсүүд
 canvas.width = 400;
 canvas.height = 600;
 
@@ -20,37 +20,42 @@ const obstacleWidth = 50;
 const obstacleHeight = 100;
 let gameSpeed = 2;
 let score = 0;
+let isGameOver = false;
 
-// Үндсэн функцууд
+// Машин зурах
 function drawCar() {
-  ctx.fillStyle = 'blue';
+  ctx.fillStyle = "blue";
   ctx.fillRect(car.x, car.y, car.width, car.height);
 }
 
+// Саад зурах
 function drawObstacles() {
-  ctx.fillStyle = 'red';
-  obstacles.forEach(obstacle => {
+  ctx.fillStyle = "red";
+  obstacles.forEach((obstacle) => {
     ctx.fillRect(obstacle.x, obstacle.y, obstacleWidth, obstacleHeight);
   });
 }
 
+// Саад хөдөлгөх
 function moveObstacles() {
-  obstacles.forEach(obstacle => {
+  obstacles.forEach((obstacle) => {
     obstacle.y += gameSpeed;
   });
 
-  // Саад хэт доошилсон бол устгах
+  // Хэт доошилсон саадыг устгах
   if (obstacles.length > 0 && obstacles[0].y > canvas.height) {
     obstacles.shift();
     score++;
   }
 }
 
+// Саад нэмэх
 function addObstacle() {
   const xPosition = Math.random() * (canvas.width - obstacleWidth);
   obstacles.push({ x: xPosition, y: -obstacleHeight });
 }
 
+// Мөргөлдөөнийг шалгах
 function detectCollision() {
   for (let i = 0; i < obstacles.length; i++) {
     const obstacle = obstacles[i];
@@ -60,42 +65,51 @@ function detectCollision() {
       car.y < obstacle.y + obstacleHeight &&
       car.y + car.height > obstacle.y
     ) {
-      return true; // Мөргөлдөх үед
+      return true; // Мөргөлдсөн
     }
   }
   return false;
 }
 
+// Тоглоом шинэчлэх
 function updateGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   drawCar();
   drawObstacles();
   moveObstacles();
 
+  // Мөргөлдөх эсэхийг шалгах
   if (detectCollision()) {
+    isGameOver = true;
     alert(`Тоглоом дууслаа! Оноо: ${score}`);
     document.location.reload();
   }
 
-  requestAnimationFrame(updateGame);
+  // Оноо харуулах
+  ctx.fillStyle = "black";
+  ctx.font = "18px Arial";
+  ctx.fillText(`Оноо: ${score}`, 10, 20);
 }
 
+// Тоглоомын давталт
 function gameLoop() {
   if (Math.random() < 0.02) {
     addObstacle();
   }
   updateGame();
+  if (!isGameOver) {
+    requestAnimationFrame(gameLoop);
+  }
 }
 
-// Товч даралтын удирдлага
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'ArrowLeft' && car.x > 0) {
+// Товч даралт
+document.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowLeft" && car.x > 0) {
     car.x -= car.speed;
-  } else if (event.key === 'ArrowRight' && car.x + car.width < canvas.width) {
+  } else if (event.key === "ArrowRight" && car.x + car.width < canvas.width) {
     car.x += car.speed;
   }
 });
 
-// Тоглоомыг эхлүүлэх
+// Тоглоом эхлүүлэх
 gameLoop();
